@@ -197,7 +197,7 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             break;
 
         case 'L':
-            if (strcmp(data.command, "LPUSH_BACK") == 0) {
+            if (strcmp(data.command, "LPUSH_B") == 0) {
                 dbms->v_type = _SINGLE_LINKED_LIST;
                 dbms->data.list = create_list();
                 dbms = read_from_file(dbms, data, filename);
@@ -211,6 +211,24 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
                 dbms->data.list = create_list();
                 dbms = read_from_file(dbms, data, filename);
                 push_front(dbms->data.list, data.value);
+                print_list(dbms->data.list);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "LDEL_B") == 0) {
+                dbms->v_type = _SINGLE_LINKED_LIST;
+                dbms->data.list = create_list();
+                dbms = read_from_file(dbms, data, filename);
+                pop_back(dbms->data.list);
+                print_list(dbms->data.list);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "LDEL_F") == 0) {
+                dbms->v_type = _SINGLE_LINKED_LIST;
+                dbms->data.list = create_list();
+                dbms = read_from_file(dbms, data, filename);
+                pop_front(dbms->data.list);
                 print_list(dbms->data.list);
                 write_to_file(dbms, data, filename);
             }
