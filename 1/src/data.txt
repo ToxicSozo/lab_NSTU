@@ -1,0 +1,3 @@
+variable2 = 1 2 3 item lol pop
+LINKED_LIST = 1 2 3 4 5
+variable1 = lol

@@ -1,28 +1,25 @@
-#include "../include/arr.h"
-#include "../include/single_linked_list.h"
-#include "../include/hash_map.h"
-#include "../include/stack.h"
-#include "../include/queue.h"
+#include "../include/dbms.h"
 
-int main(void) {
-    queue q;
-    init_queue(&q);
+int main(int argc, char* argv[]) {
+    char* filename = NULL;
+    char* query = NULL;
 
-    push_queue(&q, "Hello");
-    push_queue(&q, "World");
-    push_queue(&q, "Queue in C");
-
-    char* item;
-
-    item = pop_queue(&q);
-    free(item);  // Освобождаем строку после использования
-
-    item = pop_queue(&q);
-    free(item);  // Освобождаем строку после использования
-
-    if (isEmpty(&q)) {
-        printf("Очередь пуста.\n");
-    } else {
-        printf("В очереди есть элементы.\n");
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--file") == 0) {
+            filename = argv[++i];
+        } else if (strcmp(argv[i], "--query") == 0) {
+            query = argv[++i];
+        }
     }
+
+    if (filename == NULL || query == NULL) {
+        fprintf(stderr, "Missing --file or --query argument\n");
+        return 1;
+    }
+
+    DBMS dbms;
+    QueryData q_data = parse_query(query);
+    comand_handler(&dbms, q_data, filename);
+    
+    return 0;
 }

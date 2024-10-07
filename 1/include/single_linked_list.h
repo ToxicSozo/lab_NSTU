@@ -11,8 +11,6 @@ typedef struct {
     Node *head;
 } LinkedList;
 
-#include"../include/single_linked_list.h"
-
 Node *create_node(const char *value);
 LinkedList *create_list();
 void push_back(LinkedList *list, const char *value);
