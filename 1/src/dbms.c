@@ -305,5 +305,41 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
                 printStringArray(dbms->data.arr);
                 write_to_file(dbms, data, filename);
             }
+
+            else if (strcmp(data.command, "MGET") == 0) {
+                dbms->v_type = _ARR;
+                dbms->data.arr = create_string_array(10);
+                dbms = read_from_file(dbms, data, filename);
+                int index = atoi(data.value);
+                char* value = getStringAt(dbms->data.arr, index);
+                if (value != NULL) {
+                    printf("Value at index %d: %s\n", index, value);
+                }
+            }
+
+            else if (strcmp(data.command, "MDEL_I") == 0) {
+                dbms->v_type = _ARR;
+                dbms->data.arr = create_string_array(10);
+                dbms = read_from_file(dbms, data, filename);
+                int index = atoi(data.key);
+                deleteStringAt(dbms->data.arr, index);
+                printStringArray(dbms->data.arr);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "MSIZE") == 0) {
+                dbms->v_type = _ARR;
+                dbms->data.arr = create_string_array(10);
+                dbms = read_from_file(dbms, data, filename);
+                int size = getStringArraySize(dbms->data.arr);
+                printf("Array size: %d\n", size);
+            }
+
+            else if (strcmp(data.command, "MREAD") == 0) {
+                dbms->v_type = _ARR;
+                dbms->data.arr = create_string_array(10);
+                dbms = read_from_file(dbms, data, filename);
+                printStringArray(dbms->data.arr);
+            }
     }
 }
