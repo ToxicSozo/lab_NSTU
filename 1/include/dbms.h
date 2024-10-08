@@ -9,7 +9,8 @@
 
 typedef enum {
     _SINGLE_LINKED_LIST,
-    _STACK
+    _STACK,
+    _ARR
 } vtype;
 
 typedef struct {
@@ -17,6 +18,7 @@ typedef struct {
     union {
         stack *stack;
         LinkedList *list;
+        StringArray *arr;
     } data;
 } DBMS;
 
