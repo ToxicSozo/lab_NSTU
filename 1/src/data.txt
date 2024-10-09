@@ -1,2 +1,7 @@
-myarr = 3 4
-mystack = 1 2 3
+mystack2 = kek 4len
+mylist = 2 24 penis
+mylist2 = xuilylypa lylypa
+myarr = 2 3 4 5
+mymap = penis:kek lol:kek
+mydb = pop kek LOH
+tree =1 2 3 4 5 

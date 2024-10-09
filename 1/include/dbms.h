@@ -7,6 +7,7 @@
 #include "../include/single_linked_list.h"
 #include "../include/doubly_linked_list.h"
 #include "../include/stack.h"
+#include"../include/tree.h"
 
 typedef enum {
     _SINGLE_LINKED_LIST,
@@ -14,7 +15,8 @@ typedef enum {
     _STACK,
     _ARR,
     _HASH_MAP,
-    _QUEUE
+    _QUEUE,
+    _TREE
 } vtype;
 
 typedef struct {
@@ -26,6 +28,7 @@ typedef struct {
         StringArray *arr;
         Hash_Map *hash_map;
         queue *queue;
+        BinaryTree *tree;
     } data;
 } DBMS;
 
