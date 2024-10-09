@@ -1,2 +1,5 @@
-var1 = 2 4 5 5
-myarr = 1 2 3 4 5 6 7 8 9 10
+mymap = 2:lol 3:ttt 33:penis loh:penis sobaka:penis 1:kek
+mymap2 = name:misha
+myarr = 3 4
+mystack = 1 2 3
+mylist = 1 2 LOH

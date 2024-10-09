@@ -14,13 +14,12 @@ typedef struct _Hash_Map {
     size_t size;
 } Hash_Map;
 
+// Функции для работы с хэш-таблицей
 Hash_Map *hash_map_create(size_t size);
-Hash_Map *hash_map_insert(Hash_Map *map, 
-                          const char *key, 
-                          const char *value);
+Hash_Map *hash_map_insert(Hash_Map *map, const char *key, const char *value);
 bool hash_map_has_key(Hash_Map *map, const char *key);
 char *hash_map_at(Hash_Map *map, const char *key);
 void hash_map_print(Hash_Map *map);
 void hash_map_free(Hash_Map *map);
 
-#endif
+#endif // HASH_MAP_H

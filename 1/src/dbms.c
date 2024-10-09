@@ -38,30 +38,59 @@ DBMS *read_from_file(DBMS *dbms, QueryData q_data, const char* filename) {
     char name[256];
     char value[256];
 
+    // Читаем файл построчно
     while (fgets(line, sizeof(line), file)) {
-        line[strcspn(line, "\n")] = 0;
+        line[strcspn(line, "\n")] = 0;  // Удаляем символ новой строки
 
-        if(sscanf(line, "%s = %[^\n]", name, value) == 2) {
-            if(strcmp(name, q_data.variable) == 0) {
-                char *token = strtok(value, " ");
-                
-                while(token != NULL) {
-                    switch(dbms->v_type) {
-                        case _STACK:
+        // Если строка имеет вид "переменная = значение"
+        if (sscanf(line, "%s = %[^\n]", name, value) == 2) {
+            if (strcmp(name, q_data.variable) == 0) {
+                // Выбираем структуру данных в зависимости от dbms->v_type
+                switch (dbms->v_type) {
+                    case _STACK: {
+                        // Работа со стеком
+                        char *token = strtok(value, " ");
+                        while (token != NULL) {
                             dbms->data.stack = push(dbms->data.stack, token);
-                            break;
-                        case _SINGLE_LINKED_LIST:
-                            push_back(dbms->data.list, token);
-                            break;
-                        case _ARR:
-                            append_string(dbms->data.arr, token);
-                            break;
+                            token = strtok(NULL, " ");
+                        }
+                        break;
                     }
-                    token = strtok(NULL, " ");
+                    case _SINGLE_LINKED_LIST: {
+                        // Работа с односвязным списком
+                        char *token = strtok(value, " ");
+                        while (token != NULL) {
+                            push_back(dbms->data.list, token);
+                            token = strtok(NULL, " ");
+                        }
+                        break;
+                    }
+                    case _ARR: {
+                        // Работа с массивом
+                        char *token = strtok(value, " ");
+                        while (token != NULL) {
+                            append_string(dbms->data.arr, token);
+                            token = strtok(NULL, " ");
+                        }
+                        break;
+                    }
+                    case _HASH_MAP: {
+                        // Работа с хэш-таблицей (поддержка строковых ключей)
+                        char *pair = strtok(value, " ");
+                        while (pair != NULL) {
+                            char key[50], val[50];
+                            if (sscanf(pair, "%49[^:]:%49s", key, val) == 2) {
+                                dbms->data.hash_map = hash_map_insert(dbms->data.hash_map, key, val);
+                            }
+                            pair = strtok(NULL, " ");
+                        }
+                        break;
+                    }
                 }
             }
         }
     }
+
     fclose(file);
     return dbms;
 }
@@ -122,6 +151,17 @@ void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
                             fprintf(temp_file, "\n");
                         }
                         break;
+                    case _HASH_MAP:
+                        if (dbms->data.hash_map != NULL) {
+                            fprintf(temp_file, "%s =", name);
+                            for (size_t i = 0; i < dbms->data.hash_map->size; i++) {
+                                if (dbms->data.hash_map->entries[i].key != NULL) {
+                                    fprintf(temp_file, " %s:%s", dbms->data.hash_map->entries[i].key, dbms->data.hash_map->entries[i].value);
+                                }
+                            }
+                            fprintf(temp_file, "\n");
+                        }
+                        break;
                 }
                 found = 1;
             } 
@@ -164,6 +204,17 @@ void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
                     fprintf(temp_file, "%s =", q_data.variable);
                     for (int i = 0; i < dbms->data.arr->size; i++) {
                         fprintf(temp_file, " %s", dbms->data.arr->data[i]);
+                    }
+                    fprintf(temp_file, "\n");
+                }
+                break;
+            case _HASH_MAP:
+                if (dbms->data.hash_map != NULL) {
+                    fprintf(temp_file, "%s =", q_data.variable);
+                    for (size_t i = 0; i < dbms->data.hash_map->size; i++) {
+                        if (dbms->data.hash_map->entries[i].key != NULL) {
+                            fprintf(temp_file, " %s:%s", dbms->data.hash_map->entries[i].key, dbms->data.hash_map->entries[i].value);
+                        }
                     }
                     fprintf(temp_file, "\n");
                 }
@@ -340,6 +391,15 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
                 dbms->data.arr = create_string_array(10);
                 dbms = read_from_file(dbms, data, filename);
                 printStringArray(dbms->data.arr);
+            }
+            break;
+        case 'H':
+            if (strcmp(data.command, "HSET") == 0) {
+                dbms->v_type = _HASH_MAP;
+                dbms->data.hash_map = hash_map_create(10);
+                dbms = read_from_file(dbms, data, filename);
+                dbms->data.hash_map = hash_map_insert(dbms->data.hash_map, data.key, data.value);
+                write_to_file(dbms, data, filename);
             }
     }
 }

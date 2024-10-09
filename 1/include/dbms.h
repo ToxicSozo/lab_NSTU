@@ -10,7 +10,8 @@
 typedef enum {
     _SINGLE_LINKED_LIST,
     _STACK,
-    _ARR
+    _ARR,
+    _HASH_MAP
 } vtype;
 
 typedef struct {
@@ -19,6 +20,7 @@ typedef struct {
         stack *stack;
         LinkedList *list;
         StringArray *arr;
+        Hash_Map *hash_map;
     } data;
 } DBMS;
 
