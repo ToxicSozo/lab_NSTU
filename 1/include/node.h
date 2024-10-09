@@ -4,6 +4,7 @@
 typedef struct _Node {
     char *data;
     struct _Node *next;
+    struct _Node *prev;
 } Node;
 
 #endif

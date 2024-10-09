@@ -1,3 +1,2 @@
-mymap2 = name:misha
 myarr = 3 4
 mystack = 1 2 3

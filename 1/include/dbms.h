@@ -5,13 +5,16 @@
 #include "../include/hash_map.h"
 #include "../include/queue.h"
 #include "../include/single_linked_list.h"
+#include "../include/doubly_linked_list.h"
 #include "../include/stack.h"
 
 typedef enum {
     _SINGLE_LINKED_LIST,
+    _DOUBLE_LINKED_LIST,
     _STACK,
     _ARR,
-    _HASH_MAP
+    _HASH_MAP,
+    _QUEUE
 } vtype;
 
 typedef struct {
@@ -19,8 +22,10 @@ typedef struct {
     union {
         stack *stack;
         LinkedList *list;
+        DoublyLinkedList *dlist;
         StringArray *arr;
         Hash_Map *hash_map;
+        queue *queue;
     } data;
 } DBMS;
 

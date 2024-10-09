@@ -49,40 +49,57 @@ DBMS *read_from_file(DBMS *dbms, QueryData q_data, const char* filename) {
                 switch (dbms->v_type) {
                     case _STACK: {
                         // Работа со стеком
-                        char *token = strtok(value, " ");
-                        while (token != NULL) {
-                            dbms->data.stack = push(dbms->data.stack, token);
-                            token = strtok(NULL, " ");
+                        char *stack_token = strtok(value, " ");
+                        while (stack_token != NULL) {
+                            dbms->data.stack = push(dbms->data.stack, stack_token);
+                            stack_token = strtok(NULL, " ");
                         }
                         break;
                     }
                     case _SINGLE_LINKED_LIST: {
                         // Работа с односвязным списком
-                        char *token = strtok(value, " ");
-                        while (token != NULL) {
-                            push_back(dbms->data.list, token);
-                            token = strtok(NULL, " ");
+                        char *list_token = strtok(value, " ");
+                        while (list_token != NULL) {
+                            push_back(dbms->data.list, list_token);
+                            list_token = strtok(NULL, " ");
                         }
                         break;
                     }
                     case _ARR: {
                         // Работа с массивом
-                        char *token = strtok(value, " ");
-                        while (token != NULL) {
-                            append_string(dbms->data.arr, token);
-                            token = strtok(NULL, " ");
+                        char *arr_token = strtok(value, " ");
+                        while (arr_token != NULL) {
+                            append_string(dbms->data.arr, arr_token);
+                            arr_token = strtok(NULL, " ");
                         }
                         break;
                     }
                     case _HASH_MAP: {
                         // Работа с хэш-таблицей (поддержка строковых ключей)
-                        char *pair = strtok(value, " ");
-                        while (pair != NULL) {
+                        char *hash_map_token = strtok(value, " ");
+                        while (hash_map_token != NULL) {
                             char key[50], val[50];
-                            if (sscanf(pair, "%49[^:]:%49s", key, val) == 2) {
+                            if (sscanf(hash_map_token, "%49[^:]:%49s", key, val) == 2) {
                                 dbms->data.hash_map = hash_map_insert(dbms->data.hash_map, key, val);
                             }
-                            pair = strtok(NULL, " ");
+                            hash_map_token = strtok(NULL, " ");
+                        }
+                        break;
+                    }
+                    case _QUEUE: {
+                        // Работа с очередью
+                        char *queue_token = strtok(value, " ");
+                        while (queue_token != NULL) {
+                            push_queue(dbms->data.queue, queue_token);
+                            queue_token = strtok(NULL, " ");
+                        }
+                        break;
+                    }
+                    case _DOUBLE_LINKED_LIST: {
+                        char *dlist_token = strtok(value, " ");
+                        while (dlist_token != NULL) {
+                            addToDoublyLinkedListTail(dbms->data.dlist, dlist_token);
+                            dlist_token = strtok(NULL, " ");
                         }
                         break;
                     }
@@ -171,6 +188,28 @@ void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
                             }
                         }
                         break;
+                    case _QUEUE:
+                        if (dbms->data.queue != NULL && dbms->data.queue->front != NULL) {
+                            fprintf(temp_file, "%s =", name);
+                            Node* current = dbms->data.queue->front;
+                            while (current != NULL) {
+                                fprintf(temp_file, " %s", current->data);
+                                current = current->next;
+                            }
+                            fprintf(temp_file, "\n");
+                        }
+                        break;
+                    case _DOUBLE_LINKED_LIST:
+                        if (dbms->data.dlist != NULL && dbms->data.dlist->head != NULL) {
+                            fprintf(temp_file, "%s =", name);
+                            Node* current = dbms->data.dlist->head;
+                            while (current != NULL) {
+                                fprintf(temp_file, " %s", current->data);
+                                current = current->next;
+                            }
+                            fprintf(temp_file, "\n");
+                        }
+                        break;
                 }
                 found = 1;
             } 
@@ -237,6 +276,28 @@ void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
                     }
                 }
                 break;
+            case _QUEUE:
+                if (dbms->data.queue != NULL && dbms->data.queue->front != NULL) {
+                    fprintf(temp_file, "%s =", q_data.variable);
+                    Node* current = dbms->data.queue->front;
+                    while (current != NULL) {
+                        fprintf(temp_file, " %s", current->data);
+                        current = current->next;
+                    }
+                    fprintf(temp_file, "\n");
+                }
+                break;
+            case _DOUBLE_LINKED_LIST:
+                if (dbms->data.dlist != NULL && dbms->data.dlist->head != NULL) {
+                    fprintf(temp_file, "%s =", q_data.variable);
+                    Node *current = dbms->data.dlist->head;
+                    while (current != NULL) {
+                        fprintf(temp_file, " %s", current->data);
+                        current = current->next;
+                    }
+                    fprintf(temp_file, "\n");
+                }
+                break;
         }
     }
 
@@ -257,10 +318,11 @@ void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
 void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
     switch (data.command[0]) {
         case 'S':
+            dbms->v_type = _STACK;
+            dbms->data.stack = NULL;
+            dbms = read_from_file(dbms, data, filename);
+
             if (strcmp(data.command, "SPUSH") == 0) {
-                dbms->v_type = _STACK;
-                dbms->data.stack = NULL;
-                dbms = read_from_file(dbms, data, filename);
                 dbms->data.stack = push(dbms->data.stack, data.value);
                 show(dbms->data.stack);
                 dbms->data.stack = reverse_stack(dbms->data.stack);
@@ -268,9 +330,6 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
 
             else if (strcmp(data.command, "SPOP") == 0) {
-                dbms->v_type = _STACK;
-                dbms->data.stack = NULL;
-                dbms = read_from_file(dbms, data, filename);
                 dbms->data.stack = pop(dbms->data.stack);
                 show(dbms->data.stack);
                 dbms->data.stack = reverse_stack(dbms->data.stack);
@@ -278,64 +337,46 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
 
             else if (strcmp(data.command, "SSHOW") == 0) {
-                dbms->v_type = _STACK;
-                dbms->data.stack = NULL;
-                dbms = read_from_file(dbms, data, filename);
                 show(dbms->data.stack);
             }
-
             break;
 
         case 'L':
+            dbms->v_type = _SINGLE_LINKED_LIST;
+            dbms->data.list = create_list();
+            dbms = read_from_file(dbms, data, filename);
+
             if (strcmp(data.command, "LPUSH_B") == 0) {
-                dbms->v_type = _SINGLE_LINKED_LIST;
-                dbms->data.list = create_list();
-                dbms = read_from_file(dbms, data, filename);
                 push_back(dbms->data.list, data.value);
                 print_list(dbms->data.list);
                 write_to_file(dbms, data, filename);
             }
 
             else if (strcmp(data.command, "LPUSH_F") == 0) {
-                dbms->v_type = _SINGLE_LINKED_LIST;
-                dbms->data.list = create_list();
-                dbms = read_from_file(dbms, data, filename);
                 push_front(dbms->data.list, data.value);
                 print_list(dbms->data.list);
                 write_to_file(dbms, data, filename);
             }
 
             else if (strcmp(data.command, "LDEL_B") == 0) {
-                dbms->v_type = _SINGLE_LINKED_LIST;
-                dbms->data.list = create_list();
-                dbms = read_from_file(dbms, data, filename);
                 pop_back(dbms->data.list);
                 print_list(dbms->data.list);
                 write_to_file(dbms, data, filename);
             }
 
             else if (strcmp(data.command, "LDEL_F") == 0) {
-                dbms->v_type = _SINGLE_LINKED_LIST;
-                dbms->data.list = create_list();
-                dbms = read_from_file(dbms, data, filename);
                 pop_front(dbms->data.list);
                 print_list(dbms->data.list);
                 write_to_file(dbms, data, filename);
             }
 
             else if (strcmp(data.command, "LDEL_V") == 0) {
-                dbms->v_type = _SINGLE_LINKED_LIST;
-                dbms->data.list = create_list();
-                dbms = read_from_file(dbms, data, filename);
                 remove_value(dbms->data.list, data.value);
                 print_list(dbms->data.list);
                 write_to_file(dbms, data, filename);
             }
 
             else if (strcmp(data.command, "LSEARCH") == 0) {
-                dbms->v_type = _SINGLE_LINKED_LIST;
-                dbms->data.list = create_list();
-                dbms = read_from_file(dbms, data, filename);
                 Node* result = find_value(dbms->data.list, data.value);
                 if (result != NULL) {
                     printf("Value found: %s\n", result->data);
@@ -346,19 +387,17 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
             break;
         case 'M':
+            dbms->v_type = _ARR;
+            dbms->data.arr = create_string_array(10);
+            dbms = read_from_file(dbms, data, filename);
+
             if (strcmp(data.command, "MPUSH") == 0) {
-                dbms->v_type = _ARR;
-                dbms->data.arr = create_string_array(10);
-                dbms = read_from_file(dbms, data, filename);
                 append_string(dbms->data.arr, data.value);
                 printStringArray(dbms->data.arr);
                 write_to_file(dbms, data, filename);
             }
 
             else if (strcmp(data.command, "MINSERT") == 0) {
-                dbms->v_type = _ARR;
-                dbms->data.arr = create_string_array(10);
-                dbms = read_from_file(dbms, data, filename);
                 int index = atoi(data.key);
                 insertStringAt(dbms->data.arr, index, data.value);
                 printStringArray(dbms->data.arr);
@@ -366,9 +405,6 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
 
             else if (strcmp(data.command, "MREPLACE") == 0) {
-                dbms->v_type = _ARR;
-                dbms->data.arr = create_string_array(10);
-                dbms = read_from_file(dbms, data, filename);
                 int index = atoi(data.key);
                 replaceStringAt(dbms->data.arr, index, data.value);
                 printStringArray(dbms->data.arr);
@@ -376,9 +412,6 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
 
             else if (strcmp(data.command, "MGET") == 0) {
-                dbms->v_type = _ARR;
-                dbms->data.arr = create_string_array(10);
-                dbms = read_from_file(dbms, data, filename);
                 int index = atoi(data.value);
                 char* value = getStringAt(dbms->data.arr, index);
                 if (value != NULL) {
@@ -387,9 +420,6 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
 
             else if (strcmp(data.command, "MDEL_I") == 0) {
-                dbms->v_type = _ARR;
-                dbms->data.arr = create_string_array(10);
-                dbms = read_from_file(dbms, data, filename);
                 int index = atoi(data.key);
                 deleteStringAt(dbms->data.arr, index);
                 printStringArray(dbms->data.arr);
@@ -397,33 +427,26 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
 
             else if (strcmp(data.command, "MSIZE") == 0) {
-                dbms->v_type = _ARR;
-                dbms->data.arr = create_string_array(10);
-                dbms = read_from_file(dbms, data, filename);
                 int size = getStringArraySize(dbms->data.arr);
                 printf("Array size: %d\n", size);
             }
 
             else if (strcmp(data.command, "MREAD") == 0) {
-                dbms->v_type = _ARR;
-                dbms->data.arr = create_string_array(10);
-                dbms = read_from_file(dbms, data, filename);
                 printStringArray(dbms->data.arr);
             }
             break;
+
         case 'H':
+            dbms->v_type = _HASH_MAP;
+            dbms->data.hash_map = hash_map_create(10);
+            dbms = read_from_file(dbms, data, filename);
+
             if (strcmp(data.command, "HSET") == 0) {
-                dbms->v_type = _HASH_MAP;
-                dbms->data.hash_map = hash_map_create(10);
-                dbms = read_from_file(dbms, data, filename);
                 dbms->data.hash_map = hash_map_insert(dbms->data.hash_map, data.key, data.value);
                 write_to_file(dbms, data, filename);
             }
 
             else if (strcmp(data.command, "HGET") == 0) {
-                dbms->v_type = _HASH_MAP;
-                dbms->data.hash_map = hash_map_create(10);
-                dbms = read_from_file(dbms, data, filename);
                 char *value = hash_map_at(dbms->data.hash_map, data.key);
                 if (value != NULL) {
                     printf("Value at key '%s': %s\n", data.key, value);
@@ -435,11 +458,86 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
             }
 
             else if (strcmp(data.command, "HDEL") == 0) {
-                dbms->v_type = _HASH_MAP;
-                dbms->data.hash_map = hash_map_create(10);
-                dbms = read_from_file(dbms, data, filename);
                 hash_map_remove(dbms->data.hash_map, data.key);
                 write_to_file(dbms, data, filename);
             }
+            break;
+            
+        case 'Q':
+            dbms->v_type = _QUEUE;
+            dbms->data.queue = (queue*)malloc(sizeof(queue));
+            init_queue(dbms->data.queue);
+            dbms = read_from_file(dbms, data, filename);
+
+            if (strcmp(data.command, "QPUSH") == 0) {
+                push_queue(dbms->data.queue, data.value);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "QPOP") == 0) {
+                pop_queue(dbms->data.queue);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "QSHOW") == 0) {
+                Node* current = dbms->data.queue->front;
+                while (current != NULL) {
+                    printf("%s ", current->data);
+                    current = current->next;
+                }
+                printf("\n");
+            }
+            break;
+
+        case 'D':
+            dbms->v_type = _DOUBLE_LINKED_LIST;
+            dbms->data.dlist =(DoublyLinkedList*)malloc(sizeof(DoublyLinkedList));
+            initDoublyLinkedList(dbms->data.dlist);
+            dbms = read_from_file(dbms, data, filename);
+            
+            if (strcmp(data.command, "DPUSH_B") == 0) {
+                addToDoublyLinkedListTail(dbms->data.dlist, data.value);
+                printDoublyLinkedList(dbms->data.dlist);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "DPUSH_F") == 0) {
+                addToDoublyLinkedListHead(dbms->data.dlist, data.value);
+                printDoublyLinkedList(dbms->data.dlist);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "DDEL_B") == 0) {
+                removeFromDoublyLinkedListTail(dbms->data.dlist);
+                printDoublyLinkedList(dbms->data.dlist);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "DDEL_F") == 0) {
+                removeFromDoublyLinkedListHead(dbms->data.dlist);
+                printDoublyLinkedList(dbms->data.dlist);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "DDEL_V") == 0) {
+                removeDoublyLinkedListNodeByValue(dbms->data.dlist, data.value);
+                printDoublyLinkedList(dbms->data.dlist);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "DSEARCH") == 0) {
+                Node *result = findDoublyLinkedListNodeByValue(dbms->data.dlist, data.value);
+                if (result != NULL) {
+                    printf("Value found: %s\n", result->data);
+                }
+                else {
+                    printf("Value not found\n");
+                }
+            }
+
+            else if (strcmp(data.command, "DSHOW") == 0) {
+                printDoublyLinkedList(dbms->data.dlist);
+            }
+            break;
     }
 }

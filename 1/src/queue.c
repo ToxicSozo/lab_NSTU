@@ -11,7 +11,7 @@ void init_queue(queue* q) {
 
 void push_queue(queue* q, const char* value) {
     Node* newNode = (Node*)malloc(sizeof(Node));
-    newNode->data = strdup(value);  // Копируем строку в узел
+    newNode->data = strdup(value);
     newNode->next = NULL;
 
     if (q->rear == NULL) {
@@ -39,12 +39,10 @@ char* pop_queue(queue* q) {
     // Перемещаем указатель front на следующий узел
     q->front = q->front->next;
 
-    // Если очередь стала пустой после удаления
     if (q->front == NULL) {
         q->rear = NULL;
     }
 
-    // Освобождаем память для удаленного узла и строки
     free(temp->data);
     free(temp);
 
