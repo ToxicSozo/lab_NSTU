@@ -153,13 +153,22 @@ void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
                         break;
                     case _HASH_MAP:
                         if (dbms->data.hash_map != NULL) {
-                            fprintf(temp_file, "%s =", name);
+                            int has_elements = 0;
                             for (size_t i = 0; i < dbms->data.hash_map->size; i++) {
                                 if (dbms->data.hash_map->entries[i].key != NULL) {
-                                    fprintf(temp_file, " %s:%s", dbms->data.hash_map->entries[i].key, dbms->data.hash_map->entries[i].value);
+                                    has_elements = 1;
+                                    break;
                                 }
                             }
-                            fprintf(temp_file, "\n");
+                            if (has_elements) {
+                                fprintf(temp_file, "%s =", name);
+                                for (size_t i = 0; i < dbms->data.hash_map->size; i++) {
+                                    if (dbms->data.hash_map->entries[i].key != NULL) {
+                                        fprintf(temp_file, " %s:%s", dbms->data.hash_map->entries[i].key, dbms->data.hash_map->entries[i].value);
+                                    }
+                                }
+                                fprintf(temp_file, "\n");
+                            }
                         }
                         break;
                 }
@@ -210,13 +219,22 @@ void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
                 break;
             case _HASH_MAP:
                 if (dbms->data.hash_map != NULL) {
-                    fprintf(temp_file, "%s =", q_data.variable);
+                    int has_elements = 0;
                     for (size_t i = 0; i < dbms->data.hash_map->size; i++) {
                         if (dbms->data.hash_map->entries[i].key != NULL) {
-                            fprintf(temp_file, " %s:%s", dbms->data.hash_map->entries[i].key, dbms->data.hash_map->entries[i].value);
+                            has_elements = 1;
+                            break;
                         }
                     }
-                    fprintf(temp_file, "\n");
+                    if (has_elements) {
+                        fprintf(temp_file, "%s =", q_data.variable);
+                        for (size_t i = 0; i < dbms->data.hash_map->size; i++) {
+                            if (dbms->data.hash_map->entries[i].key != NULL) {
+                                fprintf(temp_file, " %s:%s", dbms->data.hash_map->entries[i].key, dbms->data.hash_map->entries[i].value);
+                            }
+                        }
+                        fprintf(temp_file, "\n");
+                    }
                 }
                 break;
         }
@@ -399,6 +417,28 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
                 dbms->data.hash_map = hash_map_create(10);
                 dbms = read_from_file(dbms, data, filename);
                 dbms->data.hash_map = hash_map_insert(dbms->data.hash_map, data.key, data.value);
+                write_to_file(dbms, data, filename);
+            }
+
+            else if (strcmp(data.command, "HGET") == 0) {
+                dbms->v_type = _HASH_MAP;
+                dbms->data.hash_map = hash_map_create(10);
+                dbms = read_from_file(dbms, data, filename);
+                char *value = hash_map_at(dbms->data.hash_map, data.key);
+                if (value != NULL) {
+                    printf("Value at key '%s': %s\n", data.key, value);
+                } 
+                
+                else {
+                    printf("Key '%s' not found in hash map.\n", data.key);
+                }
+            }
+
+            else if (strcmp(data.command, "HDEL") == 0) {
+                dbms->v_type = _HASH_MAP;
+                dbms->data.hash_map = hash_map_create(10);
+                dbms = read_from_file(dbms, data, filename);
+                hash_map_remove(dbms->data.hash_map, data.key);
                 write_to_file(dbms, data, filename);
             }
     }

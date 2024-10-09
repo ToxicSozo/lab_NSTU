@@ -108,6 +108,57 @@ char *hash_map_at(Hash_Map *map, const char *key) {
     return NULL;
 }
 
+// Удаление элемента по ключу из хэш-таблицы
+bool hash_map_remove(Hash_Map *map, const char *key) {
+    assert(map != NULL);
+    assert(key != NULL);
+
+    size_t idx = hash(key) % map->size;
+
+    // Линейное пробирование для поиска ключа
+    while (map->entries[idx].key != NULL) {
+        if (strcmp(map->entries[idx].key, key) == 0) {
+            // Нашли ключ, теперь его нужно удалить
+
+            // Освобождаем память, выделенную под ключ и значение
+            free(map->entries[idx].key);
+            free(map->entries[idx].value);
+
+            // Устанавливаем ключ как NULL, чтобы отметить удаление
+            map->entries[idx].key = NULL;
+            map->entries[idx].value = NULL;
+
+            // Перемещаем элементы, чтобы избежать нарушения линейного пробирования
+            size_t next_idx = (idx + 1) % map->size;
+            while (map->entries[next_idx].key != NULL) {
+                // Перехешируем элемент
+                char *rehash_key = map->entries[next_idx].key;
+                char *rehash_value = map->entries[next_idx].value;
+
+                // Удаляем элемент
+                map->entries[next_idx].key = NULL;
+                map->entries[next_idx].value = NULL;
+
+                // Вставляем элемент заново
+                hash_map_insert(map, rehash_key, rehash_value);
+
+                // Освобождаем временные строки
+                free(rehash_key);
+                free(rehash_value);
+
+                next_idx = (next_idx + 1) % map->size;
+            }
+
+            return true;  // Удаление успешно
+        }
+
+        // Переходим к следующему индексу в случае коллизии
+        idx = (idx + 1) % map->size;
+    }
+
+    return false;  // Ключ не найден
+}
+
 void hash_map_print(Hash_Map *map) {
     assert(map != NULL);
 

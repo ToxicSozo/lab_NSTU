@@ -1,5 +1,3 @@
-mymap = 2:lol 3:ttt 33:penis loh:penis sobaka:penis 1:kek
 mymap2 = name:misha
 myarr = 3 4
 mystack = 1 2 3
-mylist = 1 2 LOH
