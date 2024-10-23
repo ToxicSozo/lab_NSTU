@@ -1,13 +1,14 @@
 #ifndef DBMS_H
 #define DBMS_H
 
-#include "../include/arr.h"
-#include "../include/hash_map.h"
-#include "../include/queue.h"
-#include "../include/single_linked_list.h"
-#include "../include/doubly_linked_list.h"
-#include "../include/stack.h"
-#include"../include/tree.h"
+#include "arr.h"
+#include "hash_map.h"
+#include "queue.h"
+#include "single_linked_list.h"
+#include "doubly_linked_list.h"
+#include "stack.h"
+#include "set.h"
+#include "tree.h"
 
 typedef enum {
     _SINGLE_LINKED_LIST,
@@ -16,7 +17,8 @@ typedef enum {
     _ARR,
     _HASH_MAP,
     _QUEUE,
-    _TREE
+    _TREE,
+    _SET
 } vtype;
 
 typedef struct {
@@ -29,6 +31,7 @@ typedef struct {
         Hash_Map *hash_map;
         queue *queue;
         BinaryTree *tree;
+        Set *set;
     } data;
 } DBMS;
 

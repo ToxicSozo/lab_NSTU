@@ -37,6 +37,7 @@ void read_tokens(DBMS *dbms, char *value) {
             case _QUEUE: push_queue(dbms->data.queue, token); break;
             case _DOUBLE_LINKED_LIST: addToDoublyLinkedListTail(dbms->data.dlist, token); break;
             case _TREE: insertElement(dbms->data.tree, atoi(token)); break;
+            case _SET: set_add(dbms->data.set, atoi(token)); break;
         }
         token = strtok(NULL, " ");
     }
@@ -75,6 +76,7 @@ int is_empty(DBMS *dbms) {
         case _QUEUE: return dbms->data.queue->front == NULL;
         case _DOUBLE_LINKED_LIST: return dbms->data.dlist->head == NULL;
         case _TREE: return dbms->data.tree->root == NULL;
+        case _SET: return dbms->data.set->size == 0;
     }
     return 1;
 }
@@ -131,6 +133,12 @@ void write_tokens(FILE *file, DBMS *dbms, const char *name) {
         }
         case _TREE: {
             printTree(dbms->data.tree->root, file);
+            break;
+        }
+        case _SET: {
+            for (size_t i = 0; i < dbms->data.set->size; i++) {
+                fprintf(file, " %d", dbms->data.set->elements[i]);
+            }
             break;
         }
     }
@@ -201,6 +209,33 @@ void handle_stack(DBMS *dbms, QueryData data, const char* filename) {
     } else if (strcmp(data.command, "SSHOW") == 0) {
         show(dbms->data.stack);
     }
+    write_to_file(dbms, data, filename);
+}
+
+void handle_set(DBMS *dbms, QueryData data, const char* filename) {
+    dbms->v_type = _SET;
+    dbms->data.set = create_set(10);
+    read_from_file(dbms, data, filename);
+
+    if (strcmp(data.command, "ESETADD") == 0) {
+        int value = atoi(data.value);
+        set_add(dbms->data.set, value);
+        printf("Элемент %d добавлен в множество.\n", value);
+    } else if (strcmp(data.command, "ESETDEL") == 0) {
+        int value = atoi(data.value);
+        set_del(dbms->data.set, value);
+        printf("Элемент %d удален из множества.\n", value);
+    } else if (strcmp(data.command, "ESET_AT") == 0) {
+        int value = atoi(data.value);
+        set_at(dbms->data.set, value);
+    } else if (strcmp(data.command, "ESETSHOW") == 0) {
+        printf("Элементы множества: ");
+        for (int i = 0; i < dbms->data.set->size; i++) {
+            printf("%d ", dbms->data.set->elements[i]);
+        }
+        printf("\n");
+    }
+
     write_to_file(dbms, data, filename);
 }
 
@@ -339,5 +374,6 @@ void comand_handler(DBMS *dbms, QueryData data, const char* filename) {
         case 'Q': handle_queue(dbms, data, filename); break;
         case 'D': handle_doubly_linked_list(dbms, data, filename); break;
         case 'T': handle_tree(dbms, data, filename); break;
+        case 'E': handle_set(dbms, data, filename); break;
     }
 }
