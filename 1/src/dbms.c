@@ -37,7 +37,7 @@ void read_tokens(DBMS *dbms, char *value) {
             case _QUEUE: push_queue(dbms->data.queue, token); break;
             case _DOUBLE_LINKED_LIST: addToDoublyLinkedListTail(dbms->data.dlist, token); break;
             case _TREE: insertElement(dbms->data.tree, atoi(token)); break;
-            case _SET: set_add(dbms->data.set, atoi(token)); break;
+            case _SET: set_add(dbms->data.set, token); break;
         }
         token = strtok(NULL, " ");
     }
@@ -137,13 +137,12 @@ void write_tokens(FILE *file, DBMS *dbms, const char *name) {
         }
         case _SET: {
             for (size_t i = 0; i < dbms->data.set->size; i++) {
-                fprintf(file, " %d", dbms->data.set->elements[i]);
+                fprintf(file, " %s", dbms->data.set->elements[i]);
             }
             break;
         }
     }
 }
-
 void write_to_file(DBMS *dbms, QueryData q_data, const char* filename) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -218,27 +217,23 @@ void handle_set(DBMS *dbms, QueryData data, const char* filename) {
     read_from_file(dbms, data, filename);
 
     if (strcmp(data.command, "ESETADD") == 0) {
-        int value = atoi(data.value);
-        set_add(dbms->data.set, value);
-        printf("Элемент %d добавлен в множество.\n", value);
+        set_add(dbms->data.set, data.value);
+        printf("Элемент '%s' добавлен в множество.\n", data.value);
     } else if (strcmp(data.command, "ESETDEL") == 0) {
-        int value = atoi(data.value);
-        set_del(dbms->data.set, value);
-        printf("Элемент %d удален из множества.\n", value);
+        set_del(dbms->data.set, data.value);
+        printf("Элемент '%s' удален из множества.\n", data.value);
     } else if (strcmp(data.command, "ESET_AT") == 0) {
-        int value = atoi(data.value);
-        set_at(dbms->data.set, value);
+        set_at(dbms->data.set, data.value);
     } else if (strcmp(data.command, "ESETSHOW") == 0) {
         printf("Элементы множества: ");
         for (int i = 0; i < dbms->data.set->size; i++) {
-            printf("%d ", dbms->data.set->elements[i]);
+            printf("%s ", dbms->data.set->elements[i]);
         }
         printf("\n");
     }
 
     write_to_file(dbms, data, filename);
 }
-
 void handle_list(DBMS *dbms, QueryData data, const char* filename) {
     dbms->v_type = _SINGLE_LINKED_LIST;
     dbms->data.list = create_list();
