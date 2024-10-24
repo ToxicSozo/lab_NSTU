@@ -218,10 +218,8 @@ void handle_set(DBMS *dbms, QueryData data, const char* filename) {
 
     if (strcmp(data.command, "ESETADD") == 0) {
         set_add(dbms->data.set, data.value);
-        printf("Элемент '%s' добавлен в множество.\n", data.value);
     } else if (strcmp(data.command, "ESETDEL") == 0) {
         set_del(dbms->data.set, data.value);
-        printf("Элемент '%s' удален из множества.\n", data.value);
     } else if (strcmp(data.command, "ESET_AT") == 0) {
         set_at(dbms->data.set, data.value);
     } else if (strcmp(data.command, "ESETSHOW") == 0) {

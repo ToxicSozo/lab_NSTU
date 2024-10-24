@@ -7,9 +7,11 @@
 #include <string.h>
 
 typedef struct Set {
-    char **elements;
-    size_t capacity;
-    size_t size;
+    char **elements;    // Массив строк (оригинальный массив для хранения элементов)
+    size_t capacity;    // Ёмкость множества
+    size_t size;        // Текущий размер множества
+    char **hash_table;  // Хэш-таблица для поиска
+    size_t hash_capacity; // Ёмкость хэш-таблицы
 } Set;
 
 Set *create_set(int capacity);
